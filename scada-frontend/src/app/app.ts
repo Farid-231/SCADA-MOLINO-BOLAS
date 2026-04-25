@@ -52,37 +52,52 @@ Chart.register(...registerables);
             ● {{ estado() }}
           </div>
         </header>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;">
+  
+  <div [style.border-top]="(datos() && datos()!.nivel_llenado >= 90) ? '4px solid #f44336' : '4px solid #4caf50'" 
+       style="background: #25282c; padding: 15px; border-radius: 8px; transition: all 0.3s ease;">
+    <p style="font-size: 0.7rem; color: #888; margin: 0;">LLENADO</p>
+    <h2 style="margin: 10px 0;">{{ datos()?.nivel_llenado || 0 }}%</h2>
+  </div>
 
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;">
-          <div style="background: #25282c; padding: 15px; border-radius: 8px; border-top: 4px solid #4caf50;">
-            <p style="font-size: 0.7rem; color: #888; margin: 0;">LLENADO</p>
-            <h2 style="margin: 10px 0;">{{ datos()?.nivel_llenado }}%</h2>
-          </div>
-          <div style="background: #25282c; padding: 15px; border-radius: 8px; border-top: 4px solid #4caf50;">
-            <p style="font-size: 0.7rem; color: #888; margin: 0;">VELOCIDAD</p>
-            <h2 style="margin: 10px 0;">{{ datos()?.velocidad_rpm }} <small style="font-size: 0.5em;">RPM</small></h2>
-          </div>
-          <div style="background: #25282c; padding: 15px; border-radius: 8px; border-top: 4px solid #4caf50;">
-            <p style="font-size: 0.7rem; color: #888; margin: 0;">POTENCIA</p>
-            <h2 style="margin: 10px 0;">{{ datos()?.potencia_kw }} <small style="font-size: 0.5em;">kW</small></h2>
-          </div>
-          <div style="background: #25282c; padding: 15px; border-radius: 8px; border-top: 4px solid #4caf50;">
-            <p style="font-size: 0.7rem; color: #888; margin: 0;">ALIMENTACIÓN</p>
-            <h2 style="margin: 10px 0;">{{ datos()?.tasa_alimentacion_tph }} <small style="font-size: 0.5em;">TPH</small></h2>
-          </div>
-        </div>
+  <div [style.border-top]="(datos() && datos()!.velocidad_rpm >= 15) ? '4px solid #f44336' : '4px solid #4caf50'" 
+       style="background: #25282c; padding: 15px; border-radius: 8px; transition: all 0.3s ease;">
+    <p style="font-size: 0.7rem; color: #888; margin: 0;">VELOCIDAD</p>
+    <h2 style="margin: 10px 0;">{{ datos()?.velocidad_rpm || 0 }} <small style="font-size: 0.5em;">RPM</small></h2>
+  </div>
+
+  <div [style.border-top]="(datos() && datos()!.potencia_kw >= 400) ? '4px solid #f44336' : '4px solid #4caf50'" 
+       style="background: #25282c; padding: 15px; border-radius: 8px; transition: all 0.3s ease;">
+    <p style="font-size: 0.7rem; color: #888; margin: 0;">POTENCIA</p>
+    <h2 style="margin: 10px 0;">{{ datos()?.potencia_kw || 0 }} <small style="font-size: 0.5em;">kW</small></h2>
+  </div>
+
+  <div [style.border-top]="(datos() && datos()!.tasa_alimentacion_tph >= 180) ? '4px solid #f44336' : '4px solid #4caf50'" 
+       style="background: #25282c; padding: 15px; border-radius: 8px; transition: all 0.3s ease;">
+    <p style="font-size: 0.7rem; color: #888; margin: 0;">ALIMENTACIÓN</p>
+    <h2 style="margin: 10px 0;">{{ datos()?.tasa_alimentacion_tph || 0 }} <small style="font-size: 0.5em;">TPH</small></h2>
+  </div>
+
+</div>
 
         <div style="display: grid; grid-template-columns: 1fr 350px; gap: 20px; margin-bottom: 25px;">
           <div style="background: #25282c; border-radius: 8px; padding: 20px; display: flex; align-items: center; justify-content: center; position: relative; height: 200px;">
             <div class="gear-animation" [class.rotating]="estado() === 'OPERANDO'">⚙️</div>
           </div>
           <div style="background: #25282c; padding: 20px; border-radius: 8px; max-height: 200px; overflow-y: auto;">
-            <h3 style="font-size: 0.8rem; color: #888; margin: 0 0 15px 0;">ALARMAS ACTIVAS</h3>
-            <div *ngFor="let a of alarmas()" class="alarm-item">
-              <strong>{{ a.mensaje }}</strong> <br> <small>{{ a.hora }}</small>
-            </div>
-          </div>
-        </div>
+      <h3 style="font-size: 0.8rem; color: #888; margin: 0 0 15px 0;">ALARMAS ACTIVAS</h3>
+      <div *ngFor="let a of alarmas() || []" 
+           [style.border-left]="a.mensaje.includes('CRÍTICO') ? '4px solid #f44336' : '4px solid #4caf50'"
+           style="padding-left: 10px; margin-bottom: 10px; background: #1a1d21; border-radius: 4px; padding: 8px;">
+        <strong [style.color]="a.mensaje.includes('CRÍTICO') ? '#f44336' : '#fff'">
+          {{ a.mensaje }}
+        </strong> 
+        <br> 
+        <small style="color: #666;">{{ a.hora }}</small>
+      </div>
+    </div>
+  </div>
+
 
         <div style="background: #25282c; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
           <h3 style="font-size: 0.8rem; color: #888; margin: 0 0 15px 0;">CONSUMO EN TIEMPO REAL</h3>
@@ -164,6 +179,14 @@ export class AppComponent implements OnInit, AfterViewInit {
   loadChart: any;
   listaEventos: any[] = [];
   currentTime: string = '';
+  lecturaActual: any = { llenado: 0, estado_actual: 'DETENIDO' };
+  
+  Calcularestado(): string {
+    if (this.lecturaActual && this.lecturaActual.llenado >= 90) {
+      return 'CRÍTICO'; 
+    }
+    return this.lecturaActual?.estado_actual || 'DETENIDO';
+  }
 async descargarReporte() {
   const DATA = document.getElementById('reporte-seccion'); // Seccion que queremos convertir
   const doc = new jsPDF('p', 'pt', 'a4');
@@ -196,6 +219,9 @@ async descargarReporte() {
       docResult.save(`Reporte_Molino_${new Date().toLocaleDateString()}.pdf`);
     });
   }
+
+  
+  
 }
   constructor(private scadaService: ScadaService) {}
 
